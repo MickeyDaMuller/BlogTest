@@ -6,6 +6,8 @@ require_once 'konn.php';
 //session check
 //include('session.php');
 
+$db = new Konn();
+$pdo = $db->dbConn();
 
 if(isset($_POST['submit'])){
 

@@ -6,6 +6,9 @@ require_once 'konn.php';
 //session check
 //include('session.php');
 
+$db = new Konn();
+$pdo = $db->dbConn();
+
 
 $id = $_GET['id'];
 

@@ -1,22 +1,30 @@
 <?php 
 
-$dbhost = 'localhost';
-$dbname = 'blog_post';
-$dbpass = 'root';
-$dbuser = 'root';
+class Konn{
+private $dbhost = 'localhost';
+private $dbname = 'blog_post';
+private $dbpass = 'root';
+private $dbuser = 'root';
+
+public function dbConn(){
 
 try{
-$pdo = new PDO("mysql:host=$dbhost;dbname=$dbname",$dbuser,$dbpass);
+$pdo = new PDO("mysql:host=$this->dbhost;dbname=$this->dbname",$this->dbuser,$this->dbpass);
 
 $pdo->setAttribute(PDO::ATTR_ERRMODE,PDO::ERRMODE_EXCEPTION);
 
+return $pdo;
+
 }catch(PDOException $e){
 
-echo $e->getMessage();
-
+echo "Error message:".$e->getMessage();
+exit;
 }
 
 
+}
+
+}
 
 ?>
 
