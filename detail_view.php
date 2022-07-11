@@ -1,43 +1,41 @@
 <?php 
-// starting session
-//session_start();
-//db connection
-require_once 'konn.php';
-//session check
-//include('session.php');
-
-$db = new Konn();
-$pdo = $db->dbConn();
-
+include_once('Classes/controller.php');
 
 $id = $_GET['id'];
+$message = "";
+$getItem = new dataModel();
+$getAllItem = $getItem->viewItemById($id);
 
-
-try{
-
-$check = $pdo->prepare("SELECT * FROM post WHERE id = ?");
-		$check->execute([$id]);
-		if ($check->rowCount()>0) {
-
-			$row = $check->fetch();
-
-
-			  $title = $row["title"];
-			  $description = $row["description"];
-			  $img_link = $row["img_link"];
-			  $create_date = $row["created_date"];
-			  $author = $row["author"];
+if(!empty($getAllItem)){
+foreach($getAllItem as $detailItem){
+			  $title = $detailItem["title"];
+			  $description = $detailItem["description"];
+			  $img_link = $detailItem["img_link"];
+			  $create_date = $detailItem["created_date"];
+			  $author = $detailItem["author"];
 			  $datemade = strftime("%b %d, %Y", strtotime($create_date));
+}
 
+}else{
 
-		}
-
-}catch(PDOException $e){
-
-	echo $e->getMessage();
+	echo "No details";
 
 }
 
+if(isset($_GET['delete_id'])){
+
+	$id = $_GET['delete_id'];
+	$post_id = $_GET['post_id'];
+	
+	$deletedItem = $getItem->deleteItem($id);
+
+	if($deletedItem=="deleted"){
+
+		header("Location: ".$_SERVER['PHP_SELF']."?id=".$post_id);
+
+	}
+
+}
 
 
 if(isset($_POST['submit'])){
@@ -49,23 +47,14 @@ $mail = $_POST['mail'];
 $comment = $_POST['comment'];
 date_default_timezone_set('Europe/Berlin');
 $created_at = date('Y-m-d H:i:s');
-try{
-$insert = $pdo->prepare('INSERT INTO comments(post_id,name, mail, url,comment,created_at)VALUE(?,?,?,?,?,?)');
 
-if($insert->execute([$post_id,$name,$mail,$url,$comment,$created_at])){
-
-
-	echo header("Location: detail_view.php?$post_id");
-
-
-}
-
-
-}catch(PDOException $e){
-
-echo $e->getMessage();
-
-
+$query = 'INSERT INTO comments(post_id,name, mail, url,comment,created_at)VALUE(?,?,?,?,?,?)';
+$array = [$post_id,$name,$mail,$url,$comment,$created_at];
+$addComment = $getItem->addItem($query,$array);
+if($addComment=="inserted successful"){
+	header("Location: ".$_SERVER['PHP_SELF']."?id=".$post_id);
+  
+	
 }
 
 }
@@ -142,7 +131,7 @@ echo $e->getMessage();
 <body>
 
 		<div>
-		<a href="home.php"><img src="https://via.placeholder.com/300.png/09f/fff" height="100px" width="100px" style="padding-right: 10px;"></a>Blog Name
+		<a href="index.php"><img src="https://via.placeholder.com/300.png/09f/fff" height="100px" width="100px" style="padding-right: 10px;"></a>Blog Name
     </div>
 
     <div>
@@ -171,26 +160,28 @@ echo $e->getMessage();
 
 	<?php 
 
-	try{
+	$query = "SELECT * FROM comments WHERE post_id = ?";
+	$array = [$id];	
 
-	$comment = $pdo->prepare("SELECT * FROM comments WHERE post_id = ?");
+	$commentList = $getItem->viewItem($query,$array);
 
-	$comment->execute([$id]);	
 
-	if($comment->rowCount()>0){
-		while($comment->fetch()){
-			  $name = $row["name"];
-			  $mail = $row["mail"];
-			  $comment = $row["comment"];
-			  $url = $row["url"];
-			  $create_date = $row["created_date"];
-			  $author = $row["author"];
-			  $datemade = strftime("%b %d, %Y", strtotime($create_date));
+
+	if($message!=""){ echo $message; }
+
+	if(!empty($commentList)){
+		foreach($commentList as $comments){
+			$delete_id = $comments["id"];
+			$name = $comments["name"];
+			  $mail = $comments["mail"];
+			  $comment = $comments["comment"];
+			  $url = $comments["url"];
+			  $create_date = $comments["created_date"];
 
 	?>
 
 
-	<p><?php echo $comment; ?><span><a href=""><b>[X]</b></a></span></p> 
+	<p><?php echo $comment; ?><span><a href="<?php $_SERVER['PHP_SELF'] ?>?delete_id=<?php echo $delete_id; ?>&post_id=<?php echo $id; ?>" onclick="return confirm('Are you sure to delete?');"><b>[X]</b></a></span></p> 
 
 <?php 
 	}
@@ -200,11 +191,7 @@ echo "<center><b>No Comment!</b></center>";
 
 }
 
-}catch(PDOException $e){
 
-	echo $e->getMessage();
-
-}
 
 ?>
 

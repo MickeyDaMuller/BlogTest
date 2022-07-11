@@ -1,44 +1,30 @@
 <?php 
-// starting session
-//session_start();
-//db connection
-require_once 'konn.php';
-//session check
-//include('session.php');
-
-$db = new Konn();
-$pdo = $db->dbConn();
+include_once('Classes/controller.php');
 
 if(isset($_POST['submit'])){
+	$add = new dataModel();
+
+	$author = 'Michael Isijola';
+	$text = $_POST['text'];
+	$title = $_POST['title'];
+	$link_img = $_POST['link_img'];
+	date_default_timezone_set('Europe/Berlin');
+	$created_at = date('Y-m-d H:i:s');
+
+	$query = 'INSERT INTO post(title, description, img_link,author,created_date)VALUE(?,?,?,?,?)';
+	$array = [$title,$text,$link_img,$author,$created_at];
+	$getAllItem = $add->addItem($query,$array);
+
+	if($getAllItem=="inserted successful"){
 
 
+		echo header("Location: index.php");
 
-$author = $_SESSION[''];
-$text = $_POST['text'];
-$title = $_POST['title'];
-$link_img = $_POST['link_img'];
-date_default_timezone_set('Europe/Berlin');
-$created_at = date('Y-m-d H:i:s');
-try{
-$insert = $pdo->prepare('INSERT INTO post(title, description, img_link,author,created_date)VALUE(?,?,?,?)');
+	}else{
 
-if($insert->execute([$title,$text,$link_img,$author,$created_at])){
+		echo "Something went wrong";
 
-
-	echo header("Location: index.php");
-
-
-}
-
-
-}catch(PDOException $e){
-
-echo $e->getMessage();
-
-
-}
-
-
+	}
 
 
 }
